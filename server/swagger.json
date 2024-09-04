@@ -1,0 +1,958 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Splitwise-like API",
+    "version": "1.0.0",
+    "description": "API documentation for a Splitwise-like application."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Local server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "User registration and authentication"
+    },
+    {
+      "name": "Groups",
+      "description": "Operations related to groups"
+    },
+    {
+      "name": "Expenses",
+      "description": "Operations related to expenses"
+    },
+    {
+      "name": "Payments",
+      "description": "Operations related to payments and settlements"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "johndoe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "johndoe@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  },
+                  "profile_picture": {
+                    "type": "string",
+                    "example": "https://xyz.com/pfp.png"
+                  }
+                },
+                "required": ["username", "email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "id": "newUser.id",
+            "name": "newUser.name",
+            "email": "newUser.email",
+            "profile_picture": "newUser.profile_picture",
+            "token": "token"
+          },
+          "409": {
+            "description": "User already exists."
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "johndoe@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "message": "Login successful",
+            "token": "token",
+            "user": {
+              "id": "user.id",
+              "name": "user.name",
+              "email": "user.email",
+              "profile_picture": "user.profile_picture"
+            }
+          },
+          "400": {
+            "description": "Email and Password are required!"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/auth/profile": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get user profile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "123"
+                    },
+                    "username": {
+                      "type": "string",
+                      "example": "johndoe"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "johndoe@example.com"
+                    },
+                    "profile_picture": {
+                      "type": "string",
+                      "example": "url"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found."
+          },
+          "409": {
+            "description": "UserId is required."
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Auth"],
+        "summary": "Update user profile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "johndoe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "johndoe@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  },
+                  "profile_picture": {
+                    "type": "string",
+                    "example": "url"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User profile updated successfully"
+          },
+          "400": {
+            "description": "At least one field (name, profile_picture, email, or password) must be provided to update."
+          },
+          "404": {
+            "description": "User not found."
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+
+    "/groups": {
+      "post": {
+        "tags": ["Groups"],
+        "summary": "Create a new group",
+        "description": "Create a new group with optional members.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "members": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "id": "newGroup.id",
+            "name": "newGroup.name",
+            "created_by": "newGroup.created_by",
+            "message": "Group created successfully"          },
+          "400": {
+            "description": "Invalid input data."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      },
+      "get": {
+        "tags": ["Groups"],
+        "summary": "Get all groups for a user",
+        "description": "Retrieve all groups the authenticated user is a member of.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of groups retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Group"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/groups/{groupId}": {
+      "get": {
+        "tags": ["Groups"],
+        "summary": "Get group details",
+        "description": "Retrieve details of a specific group, including members and expenses.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group to retrieve details for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "id": "group.id",
+            "name": "group.name",
+            "description": "group.description",
+            "members": "members"
+          },
+          "404": {
+            "description": "Group not found."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      },
+      "put": {
+        "tags": ["Groups"],
+        "summary": "Update group details",
+        "description": "Update the details of a specific group.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group to update.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "message": "Group updated successfully",
+            "group": "updateResult.rows[0]"
+          },
+          "404": {
+            "description": "Group not found."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Groups"],
+        "summary": "Delete a group",
+        "description": "Delete a specific group.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group to delete.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group deleted successfully."
+          },
+          "404": {
+            "description": "Group not found."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/expenses": {
+      "post": {
+        "tags": ["Expenses"],
+        "summary": "Add a new expense to a group",
+        "description": "Create a new expense entry for a specific group.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group to add expense to.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "number"
+                  },
+                  "paidBy": {
+                    "type": "string"
+                  },
+                  "split_type": {
+                    "type": "string"
+                  }
+                },
+                "required": ["description", "amount", "paidBy", "split_type"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "id": "newExpense.id",
+            "group_id": "newExpense.group_id",
+            "description": "newExpense.description",
+            "amount": "newExpense.amount",
+            "paid_by": "newExpense.paid_by",
+            "split_type": "newExpense.split_type",
+            "created_at": "newExpense.created_at"
+          },
+          "400": {
+            "description": "All expense details are required"
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      },
+      "get": {
+        "tags": ["Expenses"],
+        "summary": "Get all expenses for a group",
+        "description": "Retrieve all expenses for a specific group.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group to retrieve expenses for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "id": "newExpense.id",
+            "group_id": "newExpense.group_id",
+            "description": "newExpense.description",
+            "amount": "newExpense.amount",
+            "paid_by": "newExpense.paid_by",
+            "split_type": "newExpense.split_type",
+            "created_at": "newExpense.created_at"
+          },
+          "404": {
+            "description": "Group not found."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },    
+    "/groups/{groupId}/expenses/{expenseId}": {
+      "get": {
+        "tags": ["Expenses"],
+        "summary": "Get details of a specific expense",
+        "description": "Retrieve details of a specific expense in a group.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group the expense belongs to.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expenseId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the expense to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "id": "newExpense.id",
+            "group_id": "newExpense.group_id",
+            "description": "newExpense.description",
+            "amount": "newExpense.amount",
+            "paid_by": "newExpense.paid_by",
+            "split_type": "newExpense.split_type",
+            "created_at": "newExpense.created_at"
+          },
+          "404": {
+            "description": "Expense not found or does not belong to this group."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      },
+      "put": {
+        "tags": ["Expenses"],
+        "summary": "Update an expense",
+        "description": "Update the details of a specific expense in a group.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group the expense belongs to.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expenseId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the expense to update.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "number"
+                  },
+                  "paid_by": {
+                    "type": "string"
+                  },
+                  "split_type": {
+                    "type": "string"
+                  }                  
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "message": "Expense Updated",
+            "description": "updateResult.rows[0].description",
+            "amount": "updateResult.rows[0].amount",
+            "paid_by": "updateResult.rows[0].paid_by",
+            "split_type": "updateResult.rows[0].split_type"
+          },
+          "400": {
+            "description":"All expense details are required"
+          },
+          "404": {
+            "description": "Expense not found."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Expenses"],
+        "summary": "Delete an expense",
+        "description": "Delete a specific expense from a group.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group the expense belongs to.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expenseId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the expense to delete.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Expense deleted successfully."
+          },
+          "404": {
+            "description": "Expense not found."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/payments": {
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Add a new payment",
+        "description": "Record a new payment transaction.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "from_user": {
+                    "type": "string"
+                  },
+                  "to_user": {
+                    "type": "string"
+                  },
+                  "group_id": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "number"
+                  }
+                },
+                "required": ["from_user", "to_user", "group_id", "amount"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "id": "newPayment.id",
+            "from_user": "newPayment.from_user",
+            "to_user": "newPayment.to_user",
+            "group_id": "newPayment.group_id",
+            "amount": "newPayment.amount",
+            "created_at": "newPayment.created_at",
+            "message": "Payment added successfully"
+          },
+          "404": {
+            "description": "One or both users are not members of the group."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/payments/group/{groupId}": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "Get all payments for a group",
+        "description": "Retrieve all payment transactions for a specific group.",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group to retrieve payments for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "id": "paymentsResult.id",
+            "from_user": "paymentsResult.from_user",
+            "to_user": "paymentsResult.to_user",
+            "group_id": "paymentsResult.group_id",
+            "amount": "paymentsResult.amount",
+            "created_at": "paymentsResult.created_at",
+            "message": "Payment retrived successfully"
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/payments/user/{userId}": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "Get payment history for a user",
+        "description": "Retrieve all payment transactions for a specific user.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the user to retrieve payments for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "id": "paymentsResult.id",
+            "from_user": "paymentsResult.from_user",
+            "to_user": "paymentsResult.to_user",
+            "group_id": "paymentsResult.group_id",
+            "amount": "paymentsResult.amount",
+            "created_at": "paymentsResult.created_at",
+            "message": "Payment of user retrived successfully"
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/balances/{groupId}": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "Calculate balances for a group",
+        "description": "Calculate the current balances of all members in a group.",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group to calculate balances for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Balances calculated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Balance"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/summary/group/{groupId}": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "Get group summary",
+        "description": "Retrieve a summary of all transactions and balances for a specific group.",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group to retrieve the summary for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group summary retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupSummary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/simplify-debts/{groupId}": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "Simplify debts for a group",
+        "description": "Simplify the debts for all members of a group.",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "description": "ID of the group to simplify debts for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Debts simplified successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimplifiedDebts"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/settle-up": {
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Settle up debts",
+        "description": "Settle up all outstanding debts for a group or user.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "payerId": {
+                    "type": "string"
+                  },
+                  "payeeId": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "number"
+                  },
+                  "groupId": {
+                    "type": "string"
+                  }
+                },
+                "required": ["payerId", "payeeId", "amount", "groupId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Debts settled successfully."
+          },
+          "400": {
+            "description": "Invalid input data."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    }
+  }
+}
