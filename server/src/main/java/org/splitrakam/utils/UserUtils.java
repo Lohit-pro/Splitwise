@@ -19,7 +19,7 @@ public class UserUtils {
             File file = new File(USER_JSON_FILE_PATH);
 
             if (!file.exists()) {
-                return new ArrayList<>();
+                throw new IOException("File not present!");
             }
 
             return objectMapper.readValue(file, new TypeReference<List<User>>() {});
@@ -32,7 +32,7 @@ public class UserUtils {
         try {
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(USER_JSON_FILE_PATH), users);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to save user", e);
+            throw new RuntimeException("Failed to save new user", e);
         }
     }
 
