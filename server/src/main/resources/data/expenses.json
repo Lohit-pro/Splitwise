@@ -1,0 +1,22 @@
+[
+  {
+    "expenseId": "33333333-cccc-cccc-cccc-333333333333",
+    "expenseGroupId": "22222222-bbbb-bbbb-bbbb-222222222222",
+    "expenseDescription": "Hotel Booking",
+    "expenseTotalAmount": 4000.0,
+    "expensePaidBy": "11111111-aaaa-aaaa-aaaa-111111111111",
+    "expenseCreatedAt": "2025-07-10T13:00:00",
+    "expenseSplitType": "EQUAL",
+    "expenseSplits": [
+      {
+        "userId": "11111111-aaaa-aaaa-aaaa-111111111111",
+        "amountOwed": 2000.0
+      },
+      {
+        "userId": "11111111-aaaa-aaaa-aaaa-222222222222",
+        "amountOwed": 2000.0
+      }
+    ],
+    "expenseIsSettled": false
+  }
+]

@@ -1,0 +1,55 @@
+| HTTP Method | Endpoint                             | Description                 |
+| ----------- | ------------------------------------ | --------------------------- |
+| POST        | /auth/signup                         | Register new user           |
+| POST        | /auth/login                          | Authenticate & receive JWT  |
+| GET         | /users/me                            | Current user profile        |
+| GET         | /groups                              | List user’s groups          |
+| POST        | /groups                              | Create group                |
+| GET         | /groups/{groupId}                    | Group details & member list |
+| PUT         | /groups/{groupId}                    | Update group                |
+| DELETE      | /groups/{groupId}                    | Delete group (admin only)   |
+| PUT         | /groups/{groupId}/members            | Add a member                |
+| DELETE      | /groups/{groupId}/members/{memberId} | Remove a member             |
+| GET         | /groups/{groupId}/expenses           | List expenses               |
+| POST        | /groups/{groupId}/expenses           | Create expense              |
+| GET         | /expenses/{expenseId}                | Get single expense          |
+| PUT         | /expenses/{expenseId}                | Update expense              |
+| DELETE      | /expenses/{expenseId}                | Delete expense              |
+| GET         | /groups/{groupId}/balances           | Compute group balances      |
+| POST        | /groups/{groupId}/settlements        | Record a settlement payment |
+
+
+src/main/java/com/yourapp
+├── config
+│   └── SecurityConfig.java
+├── controller
+│   ├── AuthController.java
+│   ├── UserController.java
+│   ├── GroupController.java
+│   ├── ExpenseController.java
+│   └── SettlementController.java
+├── dto
+│   ├── AuthRequest.java
+│   ├── AuthResponse.java
+│   ├── GroupDto.java
+│   ├── ExpenseDto.java
+│   └── BalanceDto.java
+├── exception
+│   └── GlobalExceptionHandler.java
+├── model
+│   ├── User.java
+│   ├── Group.java
+│   ├── Expense.java
+│   └── Settlement.java
+├── repository
+│   ├── UserRepository.java    // File-based impl
+│   ├── GroupRepository.java
+│   ├── ExpenseRepository.java
+│   └── SettlementRepository.java
+├── service
+│   ├── AuthService.java
+│   ├── UserService.java
+│   ├── GroupService.java
+│   ├── ExpenseService.java
+│   └── SettlementService.java
+└── Application.java
